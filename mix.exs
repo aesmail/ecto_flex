@@ -34,7 +34,8 @@ defmodule EctoFlex.MixProject do
 
   defp package() do
     [
-      licenses: ["MIT"]
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/aesmail/ecto_flex"}
     ]
   end
 end
