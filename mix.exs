@@ -24,7 +24,8 @@ defmodule EctoFlex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto, "~> 3.0"}
+      {:ecto, "~> 3.0"},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 
