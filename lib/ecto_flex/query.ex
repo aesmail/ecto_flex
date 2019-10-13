@@ -23,10 +23,7 @@ defmodule EctoFlex.FlexQuery do
   end
 
   defp construct_equals(queryable, %{equals: {k, v}}) do
-    IO.puts("Constructing #{k} with #{v}")
-    query = from(q in queryable, where: field(q, ^k) == ^v)
-    IO.inspect(query)
-    query
+    from(q in queryable, where: field(q, ^k) == ^v)
   end
 
   defp construct_equals(queryable, _), do: queryable
@@ -47,10 +44,7 @@ defmodule EctoFlex.FlexQuery do
   end
 
   defp construct_contains(queryable, %{contains: {k, v}}) do
-    IO.puts("Constructing #{k} with #{v}")
-    query = from(q in queryable, where: like(field(q, ^k), ^v))
-    IO.inspect(query)
-    query
+    from(q in queryable, where: like(field(q, ^k), ^v))
   end
 
   defp construct_contains(queryable, _), do: queryable
