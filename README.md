@@ -40,6 +40,7 @@ FlexQuery.filter(Employee, conditions)
 ### Associations
 
 Get all young employees who work in HR and Marketing.
+Employee `belongs_to :department`
 
 ```elixir
 conditions = %{
