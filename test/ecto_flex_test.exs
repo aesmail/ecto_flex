@@ -1,24 +1,102 @@
 defmodule EctoFlexTest do
   use ExUnit.Case
+  use EctoFlexTest.RepoCase
   alias EctoFlexTest.Schemas.PersonTest
   alias EctoFlex.FlexQuery
-  import Ecto.Query
+  alias EctoFlex
   doctest EctoFlex
 
-  test "building a simple query with joins" do
+  defp insert_user(params \\ %{}) do
+    user_params =
+      %{
+        "name" => "John",
+        "age" => "39",
+        "birthdate" => ~D[1980-04-01],
+        "alive" => true,
+        "description" => "very motivated and willing to learn",
+        "gender" => "m",
+        "status" => "married"
+      }
+      |> Map.merge(params)
+
+    %User{}
+    |> User.changeset(user_params)
+    |> Repo.insert()
+  end
+
+  defp insert_hobby(params \\ %{}) do
+    hobby_params = %{"name" => "Soccer"} |> Map.merge(params)
+    Hobby.changeset(%Hobby{}, hobby_params) |> Repo.insert()
+  end
+
+  defp create_data() do
+    {:ok, soccer} = insert_hobby()
+    {:ok, movies} = insert_hobby(%{"name" => "Movies"})
+    {:ok, swimming} = insert_hobby(%{"name" => "Swimming"})
+
+    {:ok, user1} = insert_user(%{"hobby_id" => soccer.id})
+
+    {:ok, user2} =
+      insert_user(%{
+        "gender" => "f",
+        "status" => "single",
+        "name" => "Christina",
+        "age" => 25,
+        "hobby_id" => movies.id
+      })
+
+    {:ok, user3} = insert_user(%{"name" => "Christ", "age" => 19, "hobby_id" => soccer.id})
+  end
+
+  test "building a simple query" do
+    create_data()
+
     conditions = %{
-      "age" => %{"is" => [20, 21]},
-      "name" => %{"contains" => "jon"},
-      "@addresses" => %{
-        "phone" => %{"is" => "123456789"},
-        "street" => %{"is" => ["102", "87"]}
-      },
-      "married" => %{"is" => true},
-      "flex" => %{"per_page" => 100, "page" => 2, "order" => "-name"}
+      "age" => %{"is" => [38, 39, 40]},
+      "name" => %{"contains" => "John"},
+      "status" => %{"is" => "married"}
     }
 
-    # |> clean_query()
-    flex_query = FlexQuery.filter(PersonTest, conditions)
-    IO.inspect(flex_query)
+    result =
+      User
+      |> FlexQuery.filter(conditions)
+      |> Repo.all()
+
+    assert length(result) == 1
+
+    conditions = %{
+      "name" => %{"contains" => "Chris"}
+    }
+
+    result = FlexQuery.filter(User, conditions) |> Repo.all()
+    assert length(result) == 2
+
+    conditions = %{
+      "name" => %{"contains" => "tina"}
+    }
+
+    result = FlexQuery.filter(User, conditions) |> Repo.all()
+    assert length(result) == 1
+
+    conditions = %{
+      "age" => %{"less_than" => 20}
+    }
+
+    result = FlexQuery.filter(User, conditions) |> Repo.all()
+    assert length(result) == 1
+  end
+
+  test "associations" do
+    create_data()
+
+    conditions = %{
+      "name" => %{"contains" => "Chris"},
+      "@hobby" => %{"name" => %{"is" => "Soccer"}}
+    }
+
+    result = FlexQuery.filter(User, conditions) |> Repo.all()
+    assert length(result) == 1
+    christ = Enum.at(result, 0)
+    assert christ.age == 19
   end
 end

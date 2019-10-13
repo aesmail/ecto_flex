@@ -4,9 +4,10 @@ defmodule EctoFlex.MixProject do
   def project do
     [
       app: :ecto_flex,
-      version: "0.2.0",
+      version: "0.3.1",
       description: description(),
       elixir: "~> 1.7",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "EctoFlex",
@@ -14,9 +15,13 @@ defmodule EctoFlex.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
+      mod: {EctoFlex.Application, []},
       extra_applications: [:logger]
     ]
   end
@@ -24,7 +29,8 @@ defmodule EctoFlex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto, "~> 3.0"},
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, "> 0.0.0", only: [:dev, :test]},
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
