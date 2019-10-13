@@ -27,7 +27,7 @@ Assuming you have an Employee schema, get all employees whose last names is "Exa
 alias EctoFlex.FlexQuery
 
 conditions = %{
-  "name" => %{"last_name" => "Example"},
+  "last_name" => %{"is" => "Example"},
   "age" => %{"is" => [40, 41, 42]},
   "married" => %{"is" => true},
   "description" => %{"contains" => "motivated"}
@@ -46,8 +46,7 @@ conditions = %{
   "age" => %{"is" => [20, 21, 22, 23, 24]},
   "@department" => %{
     "name" => %{"is" => ["HR", "Marketing"]}
-  },
-  "married" => %{"is" => true}
+  }
 }
 
 FlexQuery.filter(Employee, conditions)
