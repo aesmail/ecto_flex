@@ -1,12 +1,11 @@
 defmodule EctoFlexTest do
   use ExUnit.Case
   use EctoFlexTest.RepoCase
-  alias EctoFlexTest.Schemas.PersonTest
   alias EctoFlex.FlexQuery
   alias EctoFlex
   doctest EctoFlex
 
-  defp insert_user(params \\ %{}) do
+  defp insert_user(params) do
     user_params =
       %{
         "name" => "John",
@@ -32,11 +31,11 @@ defmodule EctoFlexTest do
   defp create_data() do
     {:ok, soccer} = insert_hobby()
     {:ok, movies} = insert_hobby(%{"name" => "Movies"})
-    {:ok, swimming} = insert_hobby(%{"name" => "Swimming"})
+    {:ok, _swimming} = insert_hobby(%{"name" => "Swimming"})
 
-    {:ok, user1} = insert_user(%{"hobby_id" => soccer.id})
+    {:ok, _user1} = insert_user(%{"hobby_id" => soccer.id})
 
-    {:ok, user2} =
+    {:ok, _user2} =
       insert_user(%{
         "gender" => "f",
         "status" => "single",
@@ -45,7 +44,10 @@ defmodule EctoFlexTest do
         "hobby_id" => movies.id
       })
 
-    {:ok, user3} = insert_user(%{"name" => "Christ", "age" => 19, "hobby_id" => soccer.id})
+    {:ok, _user3} = insert_user(%{"name" => "Christ", "age" => 19, "hobby_id" => soccer.id})
+
+    {:ok, _user4} =
+      insert_user(%{"name" => "Brian", "age" => 54, "hobby_id" => soccer.id, "description" => nil})
   end
 
   test "building a simple query" do
@@ -56,6 +58,10 @@ defmodule EctoFlexTest do
       "name" => %{"contains" => "John"},
       "status" => %{"is" => "married"}
     }
+
+    # _conditions = %{
+    #   "{title}" => %{"en" => %{"USD"}}
+    # }
 
     result =
       User
@@ -80,6 +86,13 @@ defmodule EctoFlexTest do
 
     conditions = %{
       "age" => %{"less_than" => 20}
+    }
+
+    result = FlexQuery.filter(User, conditions) |> Repo.all()
+    assert length(result) == 1
+
+    conditions = %{
+      "description" => %{"is" => nil}
     }
 
     result = FlexQuery.filter(User, conditions) |> Repo.all()

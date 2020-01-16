@@ -23,3 +23,5 @@ erl_crash.dump
 ecto_flex-*.tar
 
 .elixir_ls
+
+.DS_Store

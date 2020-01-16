@@ -12,7 +12,7 @@ PRs are welcome.
 ```elixir
 def deps do
   [
-    {:ecto_flex, "~> 0.3.0"}
+    {:ecto_flex, "~> 0.4.0"}
   ]
 end
 ```
@@ -86,3 +86,9 @@ conditions = %{ # get me all users
 }
 FlexQuery.filter(User, conditions) |> Repo.all()
 ```
+
+## Changelogs
+
+### v0.4.1
+
+ * Added support for `nil` values. You can now do `%{"field" => %{"is" => nil}}` and the query will be constructed properly.

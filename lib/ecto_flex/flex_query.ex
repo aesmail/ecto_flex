@@ -76,7 +76,9 @@ defmodule EctoFlex.FlexQuery do
     ```
   """
   @spec filter(Ecto.Queryable.t(), map()) :: Ecto.Query.t()
-  def filter(queryable, params), do: do_filter(queryable, params, false)
+  def filter(queryable, params) do
+    do_filter(queryable, params, false)
+  end
 
   defp do_filter(queryable, params, last_binding) do
     keys = Map.keys(params)
@@ -99,10 +101,18 @@ defmodule EctoFlex.FlexQuery do
     |> do_filter(options, true)
   end
 
+  # get json fields query
+  # defp build_query(query, ":" <> field_name, options, last_binding) do
+  #   build_json_query(query, field_name, options, last_binding)
+  # end
+
   defp build_query(query, key, options, last_binding) do
     f = String.to_existing_atom(key)
     build_field_conditions(query, f, options, last_binding)
   end
+
+  # defp build_json_query(query, field, options, last_binding) do
+  # end
 
   defp build_pagination(query, %{"page" => _} = options) do
     page_param = Map.get(options, "page")
@@ -154,10 +164,6 @@ defmodule EctoFlex.FlexQuery do
 
   defp build_options(query, f, condition, values, last_binding) when is_list(values) do
     case condition do
-      "is" ->
-        conditions = build_is_dynamic(f, values, last_binding)
-        from(query, where: ^conditions)
-
       "contains" ->
         conditions = build_contains_dynamic(f, values, last_binding)
         from(query, where: ^conditions)
@@ -168,33 +174,85 @@ defmodule EctoFlex.FlexQuery do
   end
 
   defp build_options(query, f, condition, value, last_binding) do
+    condition = convert_condition_text(condition)
+
     if last_binding do
       case condition do
-        "is" -> from([..., q] in query, where: field(q, ^f) == ^value)
-        "contains" -> from([..., q] in query, where: like(field(q, ^f), ^"%#{value}%"))
-        "greater_than" -> from([..., q] in query, where: field(q, ^f) > ^value)
-        "less_than" -> from([..., q] in query, where: field(q, ^f) < ^value)
-        _ -> query
+        "in" ->
+          from([..., q] in query, where: field(q, ^f) in ^value)
+
+        "is" ->
+          case value do
+            nil -> from([..., q] in query, where: is_nil(field(q, ^f)))
+            _ -> from([..., q] in query, where: field(q, ^f) == ^value)
+          end
+
+        "not" ->
+          from([..., q] in query, where: field(q, ^f) != ^value)
+
+        "starts_with" ->
+          from([..., q] in query, where: like(field(q, ^f), ^"#{value}%"))
+
+        "ends_with" ->
+          from([..., q] in query, where: like(field(q, ^f), ^"%#{value}"))
+
+        "contains" ->
+          from([..., q] in query, where: like(field(q, ^f), ^"%#{value}%"))
+
+        "greater_than" ->
+          from([..., q] in query, where: field(q, ^f) > ^value)
+
+        "greater_than_or_equal_to" ->
+          from([..., q] in query, where: field(q, ^f) >= ^value)
+
+        "less_than" ->
+          from([..., q] in query, where: field(q, ^f) < ^value)
+
+        "less_than_or_equal_to" ->
+          from([..., q] in query, where: field(q, ^f) <= ^value)
+
+        _ ->
+          query
       end
     else
       case condition do
-        "is" -> from(q in query, where: field(q, ^f) == ^value)
-        "contains" -> from(q in query, where: like(field(q, ^f), ^"%#{value}%"))
-        "greater_than" -> from(q in query, where: field(q, ^f) > ^value)
-        "less_than" -> from(q in query, where: field(q, ^f) < ^value)
-        _ -> query
+        "in" ->
+          from(q in query, where: field(q, ^f) in ^value)
+
+        "is" ->
+          case value do
+            nil -> from(q in query, where: is_nil(field(q, ^f)))
+            _ -> from(q in query, where: field(q, ^f) == ^value)
+          end
+
+        "not" ->
+          from(q in query, where: field(q, ^f) != ^value)
+
+        "starts_with" ->
+          from(q in query, where: like(field(q, ^f), ^"#{value}%"))
+
+        "ends_with" ->
+          from(q in query, where: like(field(q, ^f), ^"%#{value}"))
+
+        "contains" ->
+          from(q in query, where: like(field(q, ^f), ^"%#{value}%"))
+
+        "greater_than" ->
+          from(q in query, where: field(q, ^f) > ^value)
+
+        "greater_than_or_equal_to" ->
+          from(q in query, where: field(q, ^f) >= ^value)
+
+        "less_than" ->
+          from(q in query, where: field(q, ^f) < ^value)
+
+        "less_than_or_equal_to" ->
+          from(q in query, where: field(q, ^f) <= ^value)
+
+        _ ->
+          query
       end
     end
-  end
-
-  defp build_is_dynamic(f, values, last_binding) do
-    Enum.reduce(values, false, fn v, final_dynamic ->
-      if last_binding do
-        dynamic([..., q], field(q, ^f) == ^v or ^final_dynamic)
-      else
-        dynamic([q], field(q, ^f) == ^v or ^final_dynamic)
-      end
-    end)
   end
 
   defp build_contains_dynamic(f, values, last_binding) do
@@ -205,5 +263,17 @@ defmodule EctoFlex.FlexQuery do
         dynamic([q], like(field(q, ^f), ^v) or ^final_dynamic)
       end
     end)
+  end
+
+  defp convert_condition_text(condition) do
+    case condition do
+      "lt" -> "less_than"
+      "lte" -> "less_than_or_equal_to"
+      "gt" -> "greater_than"
+      "gte" -> "greater_than_or_equal_to"
+      "from" -> "greater_than_or_equal_to"
+      "to" -> "less_than_or_equal_to"
+      _ -> condition
+    end
   end
 end
