@@ -4,7 +4,7 @@ defmodule EctoFlex.MixProject do
   def project do
     [
       app: :ecto_flex,
-      version: "0.4.1",
+      version: "0.5.0",
       description: description(),
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),

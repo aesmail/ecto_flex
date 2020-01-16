@@ -59,10 +59,6 @@ defmodule EctoFlexTest do
       "status" => %{"is" => "married"}
     }
 
-    # _conditions = %{
-    #   "{title}" => %{"en" => %{"USD"}}
-    # }
-
     result =
       User
       |> FlexQuery.filter(conditions)
@@ -97,6 +93,13 @@ defmodule EctoFlexTest do
 
     result = FlexQuery.filter(User, conditions) |> Repo.all()
     assert length(result) == 1
+
+    conditions = %{
+      "description" => %{"not" => nil}
+    }
+
+    result = FlexQuery.filter(User, conditions) |> Repo.all()
+    assert length(result) == 3
   end
 
   test "associations" do

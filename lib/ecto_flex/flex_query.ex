@@ -188,7 +188,10 @@ defmodule EctoFlex.FlexQuery do
           end
 
         "not" ->
-          from([..., q] in query, where: field(q, ^f) != ^value)
+          case value do
+            nil -> from([..., q] in query, where: not is_nil(field(q, ^f)))
+            _ -> from([..., q] in query, where: field(q, ^f) != ^value)
+          end
 
         "starts_with" ->
           from([..., q] in query, where: like(field(q, ^f), ^"#{value}%"))
@@ -226,7 +229,10 @@ defmodule EctoFlex.FlexQuery do
           end
 
         "not" ->
-          from(q in query, where: field(q, ^f) != ^value)
+          case value do
+            nil -> from(q in query, where: not is_nil(field(q, ^f)))
+            _ -> from(q in query, where: field(q, ^f) != ^value)
+          end
 
         "starts_with" ->
           from(q in query, where: like(field(q, ^f), ^"#{value}%"))
