@@ -81,6 +81,7 @@ alias MyApp.Repo
 conditions = %{ # get me all users
   "age" => %{"greater_than" => 20}, # who are older than 20 years old
   "email" => %{"contains" => "@gmail.com"}, # who registered with their gmail account
+  "phone" => %{"not" => nil}, # who have phone numbers on record
   "@posts" => %{"inserted_at" => %{"greater_than" => yesterday}}, # who created a post today
   "flex" => %{"order" => "-age", "page" => 1, "per_page" => 10}, # the top 10, ordered by age, oldest to youngest.
 }
@@ -88,6 +89,9 @@ FlexQuery.filter(User, conditions) |> Repo.all()
 ```
 
 ## Changelogs
+
+### v0.5.0 (in development)
+ * Added support for `NOT NULL`. You can now do `%{"field" => %{"not" => nil}}`.
 
 ### v0.4.1
 
